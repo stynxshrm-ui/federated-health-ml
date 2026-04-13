@@ -5,7 +5,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 
-def load_dataset(path_str: str) -> pd.DataFrame:
+def load_dataset(path_str: str = "data/raw/heart.csv") -> pd.DataFrame:
     """Load the raw dataset from disk."""
     path = Path(path_str)
     if not path.exists():
@@ -97,7 +97,7 @@ def preprocess_dataset(
     X_train, X_test, y_train, y_test = split_train_test(
         X, y, test_size=test_size, random_state=random_state, stratify=True
     )
-    X_train, X_test, _ = scale_features(X_train, X_test)
+    X_train, X_test, scaler = scale_features(X_train, X_test)
 
     train_df = pd.concat([X_train.reset_index(drop=True), y_train.reset_index(drop=True)], axis=1)
     test_df = pd.concat([X_test.reset_index(drop=True), y_test.reset_index(drop=True)], axis=1)
@@ -107,6 +107,9 @@ def preprocess_dataset(
     save_processed_data(train_df, output_dir / "train.csv")
     save_processed_data(test_df, output_dir / "test.csv")
 
+    import joblib
+    joblib.dump(scaler, output_dir / "scaler.pkl")
+    
     return train_df, test_df
 
 
