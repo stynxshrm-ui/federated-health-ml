@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import joblib
+from pathlib import Path
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, roc_auc_score
 
@@ -24,6 +26,20 @@ def evaluate_model(model, X_test, y_test):
     accuracy = accuracy_score(y_test, y_pred)
     auc = roc_auc_score(y_test, y_pred_proba)
     return {"accuracy": accuracy, "auc": auc}
+
+def save_logistic_regression(model, path="models/logistic_regression.pkl"):
+    """Save Logistic Regression model to disk."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    joblib.dump(model, path)
+    return str(path)
+
+def load_logistic_regression(path="models/logistic_regression.pkl"):
+    """Load Logistic Regression model from disk."""
+    path = Path(path)
+    if not path.exists():
+        raise FileNotFoundError(f"Model not found at {path}")
+    return joblib.load(path)
 
 
 class MLP(nn.Module):
@@ -98,3 +114,20 @@ def evaluate_mlp(model, X_test, y_test, device="cpu"):
         "accuracy": accuracy_score(y_test, preds),
         "auc": roc_auc_score(y_test, probs),
     }
+
+def save_mlp(model, path="models/mlp_model.pth"):
+    """Save MLP model to disk."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    torch.save(model.state_dict(), path)
+    return str(path)
+
+
+def load_mlp(input_dim, path="models/mlp_model.pth", hidden_dim=64):
+    """Load MLP model from disk."""
+    path = Path(path)
+    if not path.exists():
+        raise FileNotFoundError(f"Model not found at {path}")
+    model = build_mlp(input_dim, hidden_dim)
+    model.load_state_dict(torch.load(path))
+    return model

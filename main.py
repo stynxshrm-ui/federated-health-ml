@@ -7,6 +7,8 @@ from src.baseline_model import (
     evaluate_model,
     train_mlp,
     evaluate_mlp,
+    save_logistic_regression,
+    save_mlp,
 )
 from src.data_preprocessing import preprocess_dataset, split_features_target
 
@@ -42,14 +44,22 @@ def train_and_evaluate_baseline_models(X_train, y_train, X_test, y_test):
     lr_metrics = evaluate_model(lr_model, X_test, y_test)
     results["logistic_regression"] = lr_metrics
     print(f"[RESULTS] Logistic Regression - Accuracy: {lr_metrics['accuracy']:.4f}, AUC: {lr_metrics['auc']:.4f}")
+    
+    # Save Logistic Regression
+    lr_save_path = save_logistic_regression(lr_model)
+    print(f"[SAVED] Logistic Regression model at {lr_save_path}")
 
     # MLP
     print("\n[TRAIN] MLP (50 epochs)...")
     input_dim = X_train.shape[1]
-    mlp_model, train_losses = train_mlp(X_train, y_train, input_dim=input_dim, device="cuda", epochs=50)
-    mlp_metrics = evaluate_mlp(mlp_model, X_test, y_test, device="cuda")
+    mlp_model, losses = train_mlp(X_train, y_train, input_dim=input_dim, epochs=50)
+    mlp_metrics = evaluate_mlp(mlp_model, X_test, y_test)
     results["mlp"] = mlp_metrics
     print(f"[RESULTS] MLP - Accuracy: {mlp_metrics['accuracy']:.4f}, AUC: {mlp_metrics['auc']:.4f}")
+    
+    # Save MLP
+    mlp_save_path = save_mlp(mlp_model)
+    print(f"[SAVED] MLP model at {mlp_save_path}")
 
     return results
 
