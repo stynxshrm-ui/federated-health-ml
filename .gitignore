@@ -1,3 +1,8 @@
 tst*
 .claude*
 **/*.pyc
+# raw hospital simulation data
+hospitals/node_*/data.csv
+
+# keep structure but not data
+!hospitals/.gitkeep

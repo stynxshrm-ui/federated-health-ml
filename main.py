@@ -2,7 +2,10 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.baseline_model import (
+from shared.data_preprocessing import preprocess_dataset, split_features_target
+from shared.split_data import split_into_clients, save_clients_to_nodes
+from shared.data_preprocessing import split_features_target
+from shared.model import (
     train_logistic_regression,
     evaluate_model,
     train_mlp,
@@ -10,8 +13,6 @@ from src.baseline_model import (
     save_logistic_regression,
     save_mlp,
 )
-from src.data_preprocessing import preprocess_dataset, split_features_target
-
 
 def load_data(raw_path="data/raw/heart.csv", processed_dir="data/processed"):
     """Load and preprocess data if needed."""
@@ -72,12 +73,21 @@ def main():
     train_df, test_df = load_data()
     print(f"[INFO] Loaded train: {len(train_df)} rows, test: {len(test_df)} rows")
 
-    # Prepare features and targets
+    # --- Centralized baseline ---
+    # Prepare features and targets 
     X_train, y_train, X_test, y_test = prepare_features_and_targets(train_df, test_df)
     print(f"[INFO] Features: {X_train.shape[1]}")
+    print(X_train.columns)
+    # print(X_train.equals(X_test))
+    # print(set(X_train.index).intersection(set(X_test.index)))
 
-    # Train and evaluate baseline models
+    # Train baseline first
     results = train_and_evaluate_baseline_models(X_train, y_train, X_test, y_test)
+
+    # --- Federated setup ---
+    X_fed, y_fed = X_train, y_train
+    clients = split_into_clients(X_fed, y_fed, num_clients=5)
+    save_clients_to_nodes(clients)
 
     # Summary
     print("\n[SUMMARY]")
